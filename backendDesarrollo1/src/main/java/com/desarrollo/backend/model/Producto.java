@@ -17,12 +17,25 @@ public class Producto {
     private Color color;
 
     @Column(name="GROSOR")
-    private Double grosor;
+    private Integer grosor;
 
     @Column(name="PRECIO")
     private double precio;
 
     @Column(name="STOCK")
     private int stock;
+    
+    @Column(name="ACTIVO")
+    private boolean activo = true;
 
+    private void generarId() {
+    	String codigoColor = this.color.getCodigo().toUpperCase();
+    	String grosor = String.format("%03d", this.grosor);
+    	this.id = codigoColor + "-" + grosor;
+    }
+    
+    @PrePersist
+    public void prePersis() {
+    	if (this.id == null) generarId();
+    }
 }
