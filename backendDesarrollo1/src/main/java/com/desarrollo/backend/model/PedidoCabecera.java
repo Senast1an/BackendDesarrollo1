@@ -36,6 +36,13 @@ public class PedidoCabecera {
 	@Column(name = "FECHA_ENTREGA")
 	private Date fechaEntrega;
 	
+
+    @Column(name="CANCELADO")
+    private boolean cancelado = false;
+    
+    @Column(name="ENTREGADO")
+    private boolean entregado = false;
+	
 	
 	@OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PedidoDetalle> detalles = new ArrayList<>();

@@ -2,6 +2,8 @@ package com.desarrollo.backend.model;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
@@ -22,7 +24,8 @@ public class PedidoDetalle {
 	
 	@ManyToOne
     @MapsId("pedidoId") // Vincula con el pedidoId del ID compuesto
-    @JoinColumn(name = "pedido_id")
+    @JoinColumn(name = "id_pedido")
+	@JsonBackReference
     private PedidoCabecera pedido;
 	
 	@ManyToOne

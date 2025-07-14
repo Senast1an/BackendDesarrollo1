@@ -3,6 +3,8 @@ package com.desarrollo.backend.controller;
 import com.desarrollo.backend.model.Producto;
 import com.desarrollo.backend.repository.ProductoRepository;
 
+import jakarta.websocket.server.PathParam;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,8 +22,12 @@ public class ProductoController {
 	private ProductoRepository productoRepository;
 	
 	@GetMapping
-	public Iterable<Producto> getProductos(){
-		return productoRepository.findAll();
+	public Iterable<Producto> getProductos(@RequestParam(required = false) Boolean activo){
+		if (activo == null) {
+			return productoRepository.findAll();
+		} else {
+			return productoRepository.findByActivo(activo);
+		}
 	}
 	
 	@GetMapping("/{id}")
@@ -65,4 +71,6 @@ public class ProductoController {
 	            })
 	            .orElse(ResponseEntity.notFound().build());
 	}
+	
+
 }

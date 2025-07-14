@@ -1,5 +1,6 @@
 package com.desarrollo.backend.controller;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +20,7 @@ import com.desarrollo.backend.model.PedidoCabecera;
 import com.desarrollo.backend.model.PedidoDetalle;
 import com.desarrollo.backend.repository.ClienteRepository;
 import com.desarrollo.backend.repository.PedidoCabRepository;
+import com.desarrollo.backend.service.ProductoService;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -27,6 +31,8 @@ public class PedidoController {
     private final ClienteRepository clienteRepository;
 	@Autowired
 	private PedidoCabRepository pedidoCabRepository;
+	@Autowired
+	private ProductoService productoService;
 
     PedidoController(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
@@ -36,6 +42,8 @@ public class PedidoController {
 	public ResponseEntity<?> crearPedido(@RequestBody PedidoCabecera pedido) {
 	    // Generar ID automáticamente
 	    pedido.setIdPedido(null);
+	    pedido.setFechaPedido(new Date());
+	    ProductoController productoController = new ProductoController();
 	    // Asignar el ID de pedido a los detalles
 	    int i = 1;
 	    for (PedidoDetalle detalle : pedido.getDetalles()) {
@@ -43,6 +51,7 @@ public class PedidoController {
 	        detalle.setId(new PedidoDetalle.DetallePedidoId()); // Asegúrate de crear el ID compuesto
 	        detalle.getId().setPedidoId(null); // Será asignado luego
 	        detalle.getId().setPosicion(i++);
+	        productoService.descontarStock(detalle.getProducto().getId(), detalle.getCantidad());
 	    }
 	    Optional<Cliente> clienteOpt = clienteRepository.findById(pedido.getCliente().getRuc());
 
@@ -54,6 +63,27 @@ public class PedidoController {
 	    }
 	    pedidoCabRepository.save(pedido);
 	    return ResponseEntity.ok().build();
+	}
+	
+	@PatchMapping("/{id}/cancelar")
+	public ResponseEntity<?> cancelarPedido(@PathVariable String id) {
+		return pedidoCabRepository.findById(id)
+		        .map(pedido -> {
+		        	pedido.setCancelado(true);
+		        	pedidoCabRepository.save(pedido);
+		                return ResponseEntity.ok().build();
+		        })
+		        .orElse(ResponseEntity.notFound().build());
+	}	
+	@PatchMapping("/{id}/entregar")
+	public ResponseEntity<?> entregarPedido(@PathVariable String id) {
+		return pedidoCabRepository.findById(id)
+		        .map(pedido -> {
+		        	pedido.setEntregado(true);
+		        	pedidoCabRepository.save(pedido);
+		                return ResponseEntity.ok().build();
+		        })
+		        .orElse(ResponseEntity.notFound().build());
 	}
 
     @GetMapping
